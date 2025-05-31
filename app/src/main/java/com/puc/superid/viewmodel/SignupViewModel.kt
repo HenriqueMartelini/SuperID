@@ -1,6 +1,7 @@
 package com.puc.superid.viewmodel
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.puc.superid.utils.FirebaseUtils
@@ -46,7 +47,9 @@ class SignUpViewModel : ViewModel() {
                 onSuccess()
             } catch (e: Exception) {
                 // Em caso de erro, chama o callback de falha com a mensagem do erro
-                onFailure(e.message ?: "Erro desconhecido")
+                Log.e("SignUpViewModel", "Erro ao criar conta: ${e.message}", e)
+                val errorMessage = e.message ?: "Erro desconhecido ao criar conta. Tente novamente."
+                onFailure(errorMessage)
             }
         }
     }

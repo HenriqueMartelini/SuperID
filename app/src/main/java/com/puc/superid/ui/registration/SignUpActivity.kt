@@ -138,7 +138,19 @@ class SignUpActivity : ComponentActivity() {
             // Valida os campos antes de prosseguir com a criação da conta
             if (trimmedName.isNotEmpty() && trimmedEmail.isNotEmpty() && trimmedPassword.isNotEmpty()) {
                 if (!StringUtils.isValidEmail(trimmedEmail)) {
-                    message = "Email inválido!"
+                    message = "Email inválido! Verifique o formato do email."
+                    return
+                }
+
+                // Valida se o email é Gmail
+                if (!StringUtils.isGmailEmail(trimmedEmail)) {
+                    message = "Por favor, use um email do Gmail (@gmail.com) para criar sua conta."
+                    return
+                }
+
+                // Valida o tamanho mínimo da senha
+                if (trimmedPassword.length < 6) {
+                    message = "A senha deve ter pelo menos 6 caracteres."
                     return
                 }
 

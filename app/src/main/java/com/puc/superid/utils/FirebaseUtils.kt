@@ -60,6 +60,17 @@ object FirebaseUtils {
         val firestore = FirebaseFirestore.getInstance()
 
         try {
+            // Verifica se o Firebase está inicializado
+            try {
+                val projectId = auth.app.options.projectId
+                if (projectId.isNullOrEmpty()) {
+                    throw Exception("Erro de configuração do Firebase. O arquivo google-services.json pode estar ausente ou incorreto.")
+                }
+            } catch (configException: Exception) {
+                Log.e("FirebaseUtils", "Erro de configuração do Firebase: ${configException.message}")
+                throw Exception("Erro de configuração do Firebase. Verifique se o arquivo google-services.json está na pasta app/ e sincronize o projeto.")
+            }
+            
             val authResult = auth.createUserWithEmailAndPassword(email, password).await()
             val firebaseUser = authResult.user
             val uid = firebaseUser?.uid.orEmpty()
@@ -83,9 +94,58 @@ object FirebaseUtils {
             createDefaultUserStructure(uid, firestore)
 
             Log.d("FirebaseUtils", "Usuário registrado com sucesso com subcoleções.")
+        } catch (e: FirebaseAuthException) {
+            Log.e("FirebaseUtils", "Erro ao registrar usuário: errorCode=${e.errorCode}, message=${e.message}", e)
+            val errorMessage = when (e.errorCode) {
+                "ERROR_INVALID_EMAIL" -> "O formato do email é inválido. Por favor, verifique o email digitado."
+                "ERROR_EMAIL_ALREADY_IN_USE" -> "Este email já está cadastrado. Tente fazer login ou recuperar sua senha."
+                "ERROR_WEAK_PASSWORD" -> "A senha é muito fraca. Use pelo menos 6 caracteres."
+                "ERROR_OPERATION_NOT_ALLOWED" -> "Operação não permitida. Entre em contato com o suporte."
+                "ERROR_NETWORK_REQUEST_FAILED" -> "Erro de conexão. Verifique sua internet e tente novamente."
+                "CONFIGURATION_NOT_FOUND" -> "Erro de configuração do Firebase. Verifique se o arquivo google-services.json está na pasta app/ e sincronize o projeto."
+                else -> {
+                    // Trata erros específicos do Firebase pela mensagem também
+                    val message = e.message ?: ""
+                    when {
+                        message.contains("CONFIGURATION_NOT_FOUND", ignoreCase = true) || 
+                        message.contains("Configuration not found", ignoreCase = true) -> 
+                            "Erro de configuração do Firebase. Verifique se o arquivo google-services.json está na pasta app/ e sincronize o projeto."
+                        message.contains("network", ignoreCase = true) || 
+                        message.contains("Network", ignoreCase = true) -> 
+                            "Erro de conexão. Verifique sua internet e tente novamente."
+                        message.contains("email", ignoreCase = true) -> 
+                            "Erro relacionado ao email. Verifique se o email está correto."
+                        else -> "Erro ao criar conta: ${e.localizedMessage ?: e.message ?: "Erro desconhecido"}"
+                    }
+                }
+            }
+            throw Exception(errorMessage)
         } catch (e: Exception) {
-            Log.e("FirebaseUtils", "Erro ao registrar usuário: ${e.message}")
-            throw e
+            Log.e("FirebaseUtils", "Erro ao registrar usuário: ${e.message}", e)
+            val errorMessage = when {
+                e.message?.contains("CONFIGURATION_NOT_FOUND", ignoreCase = true) == true ||
+                e.message?.contains("Configuration not found", ignoreCase = true) == true ||
+                e.message?.contains("[CONFIGURATION_NOT_FOUND]", ignoreCase = true) == true -> 
+                    "Erro de configuração do Firebase. Verifique se o arquivo google-services.json está na pasta app/ e sincronize o projeto."
+                e.message?.contains("network", ignoreCase = true) == true || 
+                e.message?.contains("Network", ignoreCase = true) == true -> 
+                    "Erro de conexão. Verifique sua internet e tente novamente."
+                e.message?.contains("email", ignoreCase = true) == true -> 
+                    "Erro relacionado ao email. Verifique se o email está correto."
+                e.message?.contains("internal error", ignoreCase = true) == true &&
+                e.message?.contains("CONFIGURATION", ignoreCase = true) == true -> 
+                    "Erro de configuração do Firebase. Verifique se o arquivo google-services.json está na pasta app/ e sincronize o projeto."
+                else -> {
+                    // Se a mensagem contém "internal error", tenta extrair mais informações
+                    val msg = e.message ?: ""
+                    if (msg.contains("internal error", ignoreCase = true)) {
+                        "Erro interno: ${msg.substringAfter("[").substringBefore("]").takeIf { it.isNotEmpty() } ?: "Verifique a configuração do Firebase."}"
+                    } else {
+                        msg.takeIf { it.isNotEmpty() } ?: "Erro desconhecido ao criar conta. Tente novamente."
+                    }
+                }
+            }
+            throw Exception(errorMessage)
         }
     }
 

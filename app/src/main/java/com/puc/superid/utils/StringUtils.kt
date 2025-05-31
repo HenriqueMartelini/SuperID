@@ -44,6 +44,17 @@ object StringUtils {
     }
 
     /**
+     * Verifica se o email é do domínio Gmail
+     *
+     * @param email O endereço de e-mail a ser verificado
+     * @return true se o email for do domínio Gmail (gmail.com), caso contrário, false
+     */
+    fun isGmailEmail(email: String): Boolean {
+        val emailLower = email.lowercase().trim()
+        return emailLower.endsWith("@gmail.com") || emailLower.endsWith("@googlemail.com")
+    }
+
+    /**
      * Cria um hash para a senha fornecida, utilizando um salt gerado aleatoriamente
      *
      * Este método usa o algoritmo PBKDF2 com HMAC-SHA256 para gerar um hash seguro da senha,
