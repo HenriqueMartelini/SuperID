@@ -61,7 +61,12 @@ object FirebaseUtils {
 
         try {
             val authResult = auth.createUserWithEmailAndPassword(email, password).await()
-            val uid = authResult.user?.uid.orEmpty()
+            val firebaseUser = authResult.user
+            val uid = firebaseUser?.uid.orEmpty()
+
+            // Envia o email de verificação automaticamente após criar a conta
+            firebaseUser?.sendEmailVerification()?.await()
+            Log.d("FirebaseUtils", "Email de verificação enviado com sucesso.")
 
             val hashedPassword = StringUtils.hashPassword(password)
 
