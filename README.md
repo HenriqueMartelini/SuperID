@@ -30,7 +30,7 @@ Passo 3: Rodar o app em um emulador
 
 Passos para testar o APP:
 Passo1: Instalar o APK em um dspositivo android:
-https://drive.google.com/file/d/1zPx6l1zxwoGc9PQs6S7kq4r4KgOwxNBP/view?usp=sharing
+https://drive.google.com/file/d/1qKn4dA0cbV4MRuqvX4NJcAxL-GgX5pw2/view?usp=sharing
 Cada dispostivo exige um passo a passo de instalação de arquivos APK, mas em suma, ele pedirá um destino
 onde deseja copiar o APK, e então, acesse essa pasta, clique sobre o APK e isntale o APP. Talvez o dispositivo
 classifique o APP como risco eminente para o dispoitivo, e você terá de aceitar, mudar as configurações para aceitar
